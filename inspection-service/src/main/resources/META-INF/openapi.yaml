@@ -1,0 +1,275 @@
+openapi: 3.0.3
+info:
+  title: Inspection API
+  version: 1.0.0
+  description: |
+    API for managing inspections in the car inspection platform.
+    
+    ## Features
+    - CRUD operations for inspections
+    - Pagination and sorting support
+    - JWT authentication
+  contact:
+    name: Car Inspection Platform Team
+    email: lonecalvary78.de@gmail.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: http://localhost:${SERVER_PORT}
+    description: Local Development
+tags:
+  - name: Inspections
+    description: Operations related to car inspections
+  - name: Metrics
+    description: Operations related to metrics
+  - name: Health
+    description: Operations related to health checks
+
+components:
+  schemas:
+    InspectionType:
+      type: string
+      enum:
+        - PRE_PURCHASE
+        - POST_PURCHASE
+        - ANNUAL
+        - MONTHLY
+        - QUARTERLY
+        - YEARLY
+    
+    InspectionStatus:
+      type: string
+      enum:
+        - SCHEDULED
+        - IN_PROGRESS
+        - COMPLETED
+        - CANCELLED
+        - MISSED
+
+    Inspection:
+      type: object
+      required:
+        - carId
+        - inspectionType
+        - inspectionDate
+        - inspectorId
+        - inspectionStatus
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the inspection
+        carId:
+          type: string
+          format: uuid
+          description: ID of the car being inspected
+        inspectionType:
+          $ref: '#/components/schemas/InspectionType'
+        inspectionDate:
+          type: string
+          format: date-time
+          description: Scheduled date and time of the inspection
+        inspectorId:
+          type: string
+          format: uuid
+          description: ID of the inspector assigned to the inspection
+        inspectionStatus:
+          $ref: '#/components/schemas/InspectionStatus'
+        inspectionResult:
+          type: object
+          additionalProperties:
+            type: string
+          description: Key-value pairs of inspection results
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the inspection was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the inspection was last updated
+
+    ApiResponse:
+      type: object
+      properties:
+        data:
+          description: Response data
+          type: object
+
+    ApiErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: string
+          description: Error code identifier
+        errorMessage:
+          type: string
+          description: Human readable error message
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+
+paths:
+  /inspections:
+    get:
+      tags:
+        - Inspections
+      summary: Get all inspections for an inspector
+      operationId: getAllInspections
+      parameters:
+        - name: inspectorId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the inspector to filter inspections
+      responses:
+        '200':
+          description: List of inspections
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Inspection'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    post:
+      tags:
+        - Inspections
+      summary: Create a new inspection
+      operationId: createInspection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Inspection'
+      responses:
+        '201':
+          description: Inspection created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Inspection'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /inspections/{inspectionId}:
+    parameters:
+      - name: inspectionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: ID of the inspection
+    
+    get:
+      tags:
+        - Inspections
+      summary: Get inspection by ID
+      operationId: getInspectionById
+      responses:
+        '200':
+          description: Inspection details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Inspection'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    put:
+      tags:
+        - Inspections
+      summary: Update an existing inspection
+      operationId: updateInspection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Inspection'
+      responses:
+        '200':
+          description: Inspection updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Inspection'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      tags:
+        - Inspections
+      summary: Delete an inspection
+      operationId: deleteInspection
+      responses:
+        '204':
+          description: Inspection deleted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /metrics:
+    get:
+      tags:
+        - Metrics
+      summary: Get application metrics
+      operationId: getMetrics
+      responses:
+        '200':
+          description: Application metrics in Prometheus format
+          content:
+            text/plain:
+              schema:
+                type: string
