@@ -1,0 +1,426 @@
+openapi: 3.0.3
+info:
+  title: Car Inspection API
+  version: 1.0.0
+  description: |
+    API for managing cars in the car inspection platform.
+    
+    ## Features
+    - CRUD operations for cars
+    - Pagination and sorting support
+    - JWT authentication
+  contact:
+    name: Car Inspection Platform Team
+    email: lonecalvary78.de@gmail.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: http://localhost:${SERVER_PORT}
+    description: Local Development  
+  - url: https://api.staging.carinspection.platform
+    description: Staging Environment
+  - url: https://api.carinspection.platform
+    description: Production Environment
+tags:
+  - name: Cars
+    description: Operations related to cars
+paths:
+  /cars:
+    get:
+      tags:
+        - Cars
+      summary: Get all cars
+      description: Retrieve a list of all cars in the system with pagination and sorting support
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page number (zero-based)
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: sort
+          in: query
+          description: Sorting criteria (comma-separated). Example - make,desc;year,asc
+          required: false
+          schema:
+            type: string
+        - name: make
+          in: query
+          description: Filter by car make
+          required: false
+          schema:
+            type: string
+        - name: model
+          in: query
+          description: Filter by car model
+          required: false
+          schema:
+            type: string
+        - name: year
+          in: query
+          description: Filter by car year
+          required: false
+          schema:
+            type: integer
+        - name: minPrice
+          in: query
+          description: Minimum price filter
+          required: false
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          description: Maximum price filter
+          required: false
+          schema:
+            type: number
+      responses:
+        '200':
+          description: A paginated list of cars
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Cars
+      summary: Create a new car
+      description: Add a new car to the system
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CarRequest'
+      responses:
+        '201':
+          description: Car created successfully
+          headers:
+            Location:
+              schema:
+                type: string
+              description: URL of the created car
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /cars/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: The ID of the car
+    get:
+      tags:
+        - Cars
+      summary: Get a car by ID
+      description: Retrieve detailed information about a specific car
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A single car
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '304':
+          description: Not modified (when using ETag)
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags:
+        - Cars
+      summary: Update a car by ID
+      description: Update the details of a specific car
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CarRequest'
+      responses:
+        '200':
+          description: Car updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - Cars
+      summary: Delete a car by ID
+      description: Remove a specific car from the system
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Car deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        data:
+          description: The response data
+          oneOf:
+            - $ref: '#/components/schemas/CarDTO'
+            - type: array
+              items:
+                $ref: '#/components/schemas/CarDTO'
+            - $ref: '#/components/schemas/PageableResponse'
+        timestamp:
+          type: string
+          format: date-time
+          description: The timestamp of the response
+      required:
+        - data
+        - timestamp
+
+    CarDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The unique identifier for the car
+          readOnly: true
+        make:
+          type: string
+          description: The make of the car
+          example: "Toyota"
+          minLength: 1
+          maxLength: 100
+        model:
+          type: string
+          description: The model of the car
+          example: "Camry"
+          minLength: 1
+          maxLength: 100
+        year:
+          type: integer
+          description: The year of the car
+          example: 2023
+          minimum: 1900
+          maximum: 2100
+        color:
+          type: string
+          description: The color of the car
+          example: "Silver"
+          minLength: 1
+          maxLength: 50
+        price:
+          type: number
+          format: double
+          description: The price of the car
+          example: 25000.00
+          minimum: 0
+        vin:
+          type: string
+          description: Vehicle Identification Number
+          pattern: '^[A-HJ-NPR-Z0-9]{17}$'
+          example: "1HGCM82633A123456"
+        status:
+          type: string
+          description: Current status of the car
+          enum: [AVAILABLE, IN_INSPECTION, SOLD, MAINTENANCE]
+          default: AVAILABLE
+        features:
+          type: array
+          description: List of car features
+          items:
+            type: string
+          example: ["GPS", "Leather Seats", "Sunroof"]
+        createdAt:
+          type: string
+          format: date-time
+          description: The timestamp when the car was created
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          description: The timestamp when the car was last updated
+          readOnly: true
+        version:
+          type: integer
+          description: Version number for optimistic locking
+          readOnly: true
+      required:
+        - make
+        - model
+        - year
+        - color
+        - price
+        - vin
+
+    CarRequest:
+      type: object
+      properties:
+        make:
+          type: string
+          description: The make of the car
+          example: "Toyota"
+          minLength: 1
+          maxLength: 100
+        model:
+          type: string
+          description: The model of the car
+          example: "Camry"
+          minLength: 1
+          maxLength: 100
+        year:
+          type: integer
+          description: The year of the car
+          example: 2023
+          minimum: 1900
+          maximum: 2100
+        color:
+          type: string
+          description: The color of the car
+          example: "Silver"
+          minLength: 1
+          maxLength: 50
+        price:
+          type: number
+          format: double
+          description: The price of the car
+          example: 25000.00
+          minimum: 0
+        vin:
+          type: string
+          description: Vehicle Identification Number
+          pattern: '^[A-HJ-NPR-Z0-9]{17}$'
+          example: "1HGCM82633A123456"
+        features:
+          type: array
+          description: List of car features
+          items:
+            type: string
+          example: ["GPS", "Leather Seats", "Sunroof"]
+      required:
+        - make
+        - model
+        - year
+        - color
+        - price
+        - vin
+
+    ApiErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Error code
+          example: "CAR-ERR-001"
+        message:
+          type: string
+          description: Error message
+          example: "Car not found"
+        details:
+          type: array
+          description: Detailed error information
+          items:
+            type: string
+          example: ["Invalid VIN format", "Price must be positive"]
+        timestamp:
+          type: string
+          format: date-time
+          description: The time when the error occurred
+      required:
+        - code
+        - message
+        - timestamp
+
+  responses:
+    BadRequestError:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+    UnauthorizedError:
+      description: Authentication failed or token missing/invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+    NotFoundError:
+      description: The requested resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+    ConflictError:
+      description: The request conflicts with the current state
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+    InternalServerError:
+      description: Internal server error occurred
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token authentication
