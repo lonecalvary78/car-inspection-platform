@@ -1,0 +1,16 @@
+server:
+  port: ${SERVER_PORT}
+  features: 
+    observe:
+      observers:
+        health:
+          details: true
+        metrics:
+          enabled: true
+db:
+  mode: localstack
+  localstack:
+    endpoint: ${LOCALSTACK_ENDPOINT}
+    region: ${LOCALSTACK_REGION}
+    access-key-id: ${LOCALSTACK_ACCESS_KEY_ID}
+    secret-access-key: ${LOCALSTACK_SECRET_ACCESS_KEY}
