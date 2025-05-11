@@ -21,6 +21,7 @@ import app.carinspection.platform.car.model.entity.Car;
 import app.carinspection.platform.car.repository.CarRepository;
 import app.carinspection.platform.car.testcase.SimpleTestCase;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -39,6 +40,7 @@ public class CarRepositoryTest {
                 .credentialsProvider(() -> AwsBasicCredentials.create(
                         localStackContainer.getAccessKey(),
                         localStackContainer.getSecretKey()))
+                .region(Region.of(localStackContainer.getRegion()))        
                 .build();
         this.carRepository = new CarRepository(dynamoDbClient);
         DatabaseUtil.createTableWhenNotExist(dynamoDbClient);                
