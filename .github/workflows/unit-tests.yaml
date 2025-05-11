@@ -1,0 +1,25 @@
+name: Unit Tests
+on:
+  push:
+    branches:
+      - main
+        
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: project-checkout
+        uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: liberica
+          cache: maven
+      - id: build
+        run: mvn clean test
+      - id: upload-test-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: target/surefire-reports
+          retention-days: 5
