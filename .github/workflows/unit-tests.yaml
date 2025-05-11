@@ -17,7 +17,7 @@ jobs:
           cache: maven
       - id: copy-source-project-service
         run: |
-          cp car-service/src ./src
+          cp -r car-service/src ./src
           cp car-service/pom.xml .    
       - id: build
         run: mvn clean test
