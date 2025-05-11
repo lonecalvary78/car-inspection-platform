@@ -3,5 +3,8 @@
 This is a showcase project for the car inspection platform
 
 ## Stacks
-- Quarkus
+- Helidon SE
 - DynamoDB(Localstack for local development)
+
+# Features
+- Car Service

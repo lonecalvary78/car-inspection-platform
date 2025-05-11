@@ -1,0 +1,15 @@
+server:
+  host: 0.0.0.0
+  port: ${SERTVER_PORT}
+  features: 
+    observe:
+      observers:
+        health:
+          details: true
+        metrics:
+          enabled: true  
+db:
+  mode: ${DB_MODE}
+  localstack:
+    endpoint: ${LOCALSTACK_ENDPOINT}
+    region: ${LOCALSTACK_REGION}       

@@ -1,0 +1,212 @@
+openapi: 3.0.0
+info:
+  title: Car API
+  description: A simple application to manage cars
+  version: 1.0.0
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: http://localhost:8181
+    description: Local
+paths:
+  /cars:
+    get:
+      summary: Get all Cars
+      description: Get all cars
+      operationId: getAllCars
+      parameters:
+        - name: carOwnerId
+          in: query
+          required: true
+          type: string
+        - name: currentPage
+          in: query
+          required: false
+          type: integer
+          default: 1
+      responses:
+        '200':
+          description: A list of cars
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    post:
+      summary: Create a new Car
+      description: Create a new car
+      operationId: createCar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiRequest'
+      responses:
+        '201':
+          description: Car created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '409':
+          description: Car already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+                
+                
+  /cars/{carId}:
+    get:
+      summary: Get a Car details by Car ID
+      description: Get a car by Car ID
+      operationId: getCarById
+      parameters:
+        - name: carId
+          in: path
+          required: true
+      responses:
+        '200':
+          description: A car
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '404':
+          description: Car not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    put:
+      summary: Update a Car details by Car ID
+      description: Update a car by Car ID
+      operationId: updateCarById
+      parameters:
+        - name: carId
+          in: path
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiRequest'
+      responses:
+        '200':
+          description: Car updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '404':
+          description: Car not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+    delete:
+      summary: Delete a Car details by Car ID
+      description: Delete a car by Car ID
+      operationId: deleteCarById
+      parameters:
+        - name: carId
+          in: path
+          required: true
+      responses:
+        '204':
+          description: Car deleted successfully
+        '404':
+          description: Car not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse' 
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+components:
+  schemas:
+    ApiRequest:
+      type: object
+      properties:
+        data:
+          type: object
+          $ref: '#/components/schemas/Car'
+    ApiResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          $ref: '#/components/schemas/Car'
+    ApiErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+    Car:
+      type: object
+      properties:
+        id:
+          type: string
+        brand:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer 
+        color:
+          type: string
+        price:
+          type: number
+        createdAt:
+          type: string  
+        updatedAt:
+          type: string
+      required:
+        - id
+        - brand
+        - model 
+        - year
+        - color
+        - price
+        - createdAt
+        - updatedAt
+      example:
+        id: "1"
+        brand: "Toyota"
+        model: "Corolla"
+        year: 2020
+        color: "Red"
+        price: 10000
+        createdAt: "2020-01-01"
+        updatedAt: "2020-01-01"
+
