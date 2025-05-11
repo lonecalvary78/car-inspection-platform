@@ -5,7 +5,7 @@ on:
       - main
         
 jobs:
-  build:
+  unit-test-car-service:
     runs-on: ubuntu-latest
     steps:
       - id: project-checkout
@@ -15,6 +15,10 @@ jobs:
           java-version: 21
           distribution: liberica
           cache: maven
+      - id: copy-source-project-service
+        run: |
+          cp car-service/src ./src
+          cp car-service/pom.xml .    
       - id: build
         run: mvn clean test
       - id: upload-test-artifact
