@@ -2,6 +2,8 @@ package app.carinspection.platform.car.model.entity;
 
 import java.util.UUID;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
 import software.amazon.awssdk.enhanced.dynamodb.extensions.annotations.DynamoDbVersionAttribute;
@@ -20,14 +22,23 @@ public class Car {
     @Getter(onMethod = @__(@DynamoDbPartitionKey))
     private UUID id;
 
-    @Getter(onMethod = @__(@DynamoDbSecondaryPartitionKey(indexNames = {INDEX_BY_OWNER_ID}))) 
+    @Getter(onMethod = @__(@DynamoDbSecondaryPartitionKey(indexNames = {INDEX_BY_OWNER_ID})))
+    @NotNull(message = "the car owner should be assigned") 
     private UUID ownerId;
 
+    @NotBlank(message = "the car brand should not be empty")
     private String brand;
+    @NotBlank(message = "the car model should not be empty")
     private String model;
+    @NotBlank(message = "the car manufactured year should not be empty")
     private String year;
+    @NotBlank(message = "the car colour should not be empty")
     private String color;
+
+    @NotBlank(message = "the car license plate should not be empty")
     private String licensePlate;
+
+    @NotBlank(message = "the car identification number(VIN) should not be empty")
     private String vin;
     
      @Getter(onMethod = @__(@DynamoDbVersionAttribute))   

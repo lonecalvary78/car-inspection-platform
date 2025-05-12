@@ -81,6 +81,23 @@
 			<scope>runtime</scope>
 		</dependency>
 		
+		<!-- Bean validation -->
+		<dependency>
+			<groupId>jakarta.validation</groupId>
+			<artifactId>jakarta.validation-api</artifactId>
+			<version>3.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate.validator</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>8.0.2.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish</groupId>
+			<artifactId>jakarta.el</artifactId>
+			<version>4.0.2</version>
+		</dependency>
+
 		<!-- AWS DynamoDB -->
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>

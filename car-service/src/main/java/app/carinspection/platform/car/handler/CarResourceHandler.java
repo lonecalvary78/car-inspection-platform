@@ -1,5 +1,6 @@
 package app.carinspection.platform.car.handler;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -8,6 +9,7 @@ import app.carinspection.platform.car.api.response.ApiErrorResponse;
 import app.carinspection.platform.car.application.CarApplication;
 import app.carinspection.platform.car.exception.ApplicationException;
 import app.carinspection.platform.car.exception.ErrorType;
+import app.carinspection.platform.car.infrastructure.validation.ValidationUtil;
 import io.helidon.webserver.http.HttpRules;
 import io.helidon.webserver.http.HttpService;
 import io.helidon.webserver.http.ServerRequest;
@@ -53,6 +55,7 @@ public class CarResourceHandler implements HttpService {
         try {
             var apiRequest = request.content().asOptional(ApiRequest.class).orElseThrow(()->new ApplicationException(ErrorType.MISSING_CAR_PAYLOAD));
             var car = Optional.ofNullable(apiRequest.data()).orElseThrow(()-> new ApplicationException(ErrorType.MISSING_CAR_PAYLOAD));
+            ValidationUtil.validatePayload(car);
             response.status(201).send(carApplication.createNewCar(car));
         } catch(ApplicationException thrownApplicationException) {
             handleAnyException(response, thrownApplicationException);
@@ -64,6 +67,7 @@ public class CarResourceHandler implements HttpService {
             var carId = UUID.fromString(request.path().pathParameters().first("carId").orElseThrow(()-> new ApplicationException(ErrorType.MISSING_UNIQUE_ID)));
             var apiRequest = request.content().asOptional(ApiRequest.class).orElseThrow(()->new ApplicationException(ErrorType.MISSING_CAR_PAYLOAD));
             var car = Optional.ofNullable(apiRequest.data()).orElseThrow(()-> new ApplicationException(ErrorType.MISSING_CAR_PAYLOAD));
+            ValidationUtil.validatePayload(car);
             response.send(carApplication.updateCar(carId, car));
         } catch(ApplicationException thrownApplicationException) {
             handleAnyException(response, thrownApplicationException);
@@ -82,7 +86,25 @@ public class CarResourceHandler implements HttpService {
 
     private void handleAnyException(ServerResponse response, ApplicationException thrownApplicationException) {
         var errorType = thrownApplicationException.getErrorType();
-        response.status(errorType.getStatusCode()).send(ApiErrorResponse.of(errorType));
+        if(errorType.equals(ErrorType.VALIDATION_ERROR)) {
+            if(!thrownApplicationException.getValidationErrors().isEmpty()) {
+            response.status(errorType.getStatusCode()).send(ApiErrorResponse.of(errorType,listValidationErrorsToMessage(thrownApplicationException.getValidationErrors())));
+            }
+        } else {
+            response.status(errorType.getStatusCode()).send(ApiErrorResponse.of(errorType));
+          }
+    }
+
+    private String listValidationErrorsToMessage(Map<String,String> validationErrors) {
+        var textAppender = new StringBuilder();
+        if(validationErrors != null && !validationErrors.isEmpty()) {
+            var errorKeys = validationErrors.keySet();
+            for(String errorKey: errorKeys) {
+                textAppender.append(validationErrors.get(errorKey));
+                textAppender.append("\n");
+            }
+        }
+        return textAppender.toString();
     }
 
 }
