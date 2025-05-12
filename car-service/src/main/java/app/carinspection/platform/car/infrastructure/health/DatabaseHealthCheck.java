@@ -12,7 +12,7 @@ import io.helidon.health.HealthCheckType;
 
 public class DatabaseHealthCheck implements HealthCheck {
     private static final String TABLE_NAME_KEY="table.name";
-    private static 
+    
     @Override
     public HealthCheckType type() {
         return io.helidon.health.HealthCheckType.READINESS;
